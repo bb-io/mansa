@@ -10,19 +10,44 @@ namespace Apps.Mansa.Api;
 
 public class Client : BlackBirdRestClient
 {
-    public Client(IEnumerable<AuthenticationCredentialsProvider> creds) : base(new()
+   
+     private readonly string token;
+
+    public Client(IEnumerable<AuthenticationCredentialsProvider> creds)
+        : base(new()
+        {
+            BaseUrl = new Uri("https://all-lab-portal.com/api"),
+        })
     {
-        BaseUrl = new Uri(""),
-    })
+        token = creds.Get(CredsNames.Token).Value;
+        this.AddDefaultHeader("Content-Type", "application/json");
+    }
+
+    public async Task<RestResponse> ExecuteWithTokenAsync(RestRequest request, Dictionary<string, object> bodyParams)
     {
-        this.AddDefaultHeader("Authorization", creds.Get(CredsNames.Token).Value);
+        if (bodyParams != null && bodyParams.Any())
+        {
+            bodyParams.Add("token", token);
+            request.AddJsonBody(bodyParams);
+        }
+        else
+        {
+            request.AddJsonBody(new { token = token });
+        }
+
+        var response = await ExecuteAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            ConfigureErrorException(response);
+        }
+        return response;
     }
 
     protected override Exception ConfigureErrorException(RestResponse response)
     {
-        var error = JsonConvert.DeserializeObject(response.Content);
-        var errorMessage = "";
-
-        throw new PluginApplicationException(errorMessage);
+        var message = $"({response.StatusCode}): {response.Content}";
+        throw new PluginApplicationException(message);
     }
 }
+
