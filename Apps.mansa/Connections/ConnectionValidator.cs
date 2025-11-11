@@ -18,6 +18,7 @@ public class ConnectionValidator: IConnectionValidator
 
             var jsonBody = new
             {
+                token = authenticationCredentialsProviders.First(x => x.KeyName == "token").Value,
                 text = "Hello",
                 to = "Swahili",
                 from = "English"
