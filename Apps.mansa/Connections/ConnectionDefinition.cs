@@ -1,8 +1,8 @@
-﻿using Apps.Appname.Constants;
+using Apps.Mansa.Constants;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Connections;
 
-namespace Apps.Appname.Connections;
+namespace Apps.Mansa.Connections;
 
 public class ConnectionDefinition : IConnectionDefinition
 {
@@ -10,11 +10,11 @@ public class ConnectionDefinition : IConnectionDefinition
     {
         new()
         {
-            Name = "Developer API key",
+            Name = "API key",
             AuthenticationType = ConnectionAuthenticationType.Undefined,
             ConnectionProperties = new List<ConnectionProperty>
             {
-                new(CredsNames.Token) { DisplayName = "API Token", Sensitive = true}
+                new(CredsNames.Token) { DisplayName = "API Key", Sensitive = true}
             }
         }
     };

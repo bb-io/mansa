@@ -1,9 +1,9 @@
-﻿using Apps.Appname.Api;
+using Apps.Mansa.Api;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Connections;
 using RestSharp;
 
-namespace Apps.Appname.Connections;
+namespace Apps.Mansa.Connections;
 
 public class ConnectionValidator: IConnectionValidator
 {

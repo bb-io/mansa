@@ -1,8 +1,8 @@
-using Apps.Appname.Connections;
+using Apps.Mansa.Connections;
 using Blackbird.Applications.Sdk.Common.Authentication;
-using Tests.Appname.Base;
+using Tests.Mansa.Base;
 
-namespace Tests.Appname;
+namespace Tests.Mansa;
 
 [TestClass]
 public class ConnectionValidatorTests : TestBase

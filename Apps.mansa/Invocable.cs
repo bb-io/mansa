@@ -1,9 +1,9 @@
-using Apps.Appname.Api;
+using Apps.Mansa.Api;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Invocation;
 
-namespace Apps.Appname;
+namespace Apps.Mansa;
 
 public class Invocable : BaseInvocable
 {

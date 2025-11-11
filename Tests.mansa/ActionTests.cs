@@ -1,7 +1,7 @@
-﻿using Apps.Appname.Actions;
-using Tests.Appname.Base;
+using Apps.Mansa.Actions;
+using Tests.Mansa.Base;
 
-namespace Tests.Appname;
+namespace Tests.Mansa;
 
 [TestClass]
 public class ActionTests : TestBase
