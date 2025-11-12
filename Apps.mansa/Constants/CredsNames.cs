@@ -1,4 +1,4 @@
-namespace Apps.Appname.Constants;
+namespace Apps.Mansa.Constants;
 
 public static class CredsNames
 {

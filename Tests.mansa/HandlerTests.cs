@@ -1,8 +1,8 @@
-﻿using Apps.Appname.Handlers;
+using Apps.Mansa.Handlers;
 using Blackbird.Applications.Sdk.Common.Dynamic;
-using Tests.Appname.Base;
+using Tests.Mansa.Base;
 
-namespace Tests.Appname;
+namespace Tests.Mansa;
 
 [TestClass]
 public class HandlerTests : TestBase

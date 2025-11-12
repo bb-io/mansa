@@ -1,9 +1,9 @@
-﻿using Apps.Appname.Api;
+using Apps.Mansa.Api;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Connections;
 using RestSharp;
 
-namespace Apps.Appname.Connections;
+namespace Apps.Mansa.Connections;
 
 public class ConnectionValidator: IConnectionValidator
 {
@@ -14,13 +14,23 @@ public class ConnectionValidator: IConnectionValidator
         try
         {
             var client = new Client(authenticationCredentialsProviders);
+            var request = new RestRequest("https://all-lab-portal.com/api/translate", Method.Post);
 
-            await client.ExecuteWithErrorHandling(new RestRequest());
+            var jsonBody = new
+            {
+                token = authenticationCredentialsProviders.First(x => x.KeyName == "token").Value,
+                text = "Hello",
+                to = "Swahili",
+                from = "English"
+            };
+            request.AddJsonBody(jsonBody);
+            await client.ExecuteWithErrorHandling(request);
 
             return new()
             {
                 IsValid = true
             };
+
         } catch(Exception ex)
         {
             return new()
