@@ -1,8 +1,10 @@
 using Apps.Mansa.Models;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
-using Newtonsoft.Json;
+using Blackbird.Applications.SDK.Blueprints;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using RestSharp;
 
 namespace Apps.Mansa.Actions;
@@ -10,8 +12,9 @@ namespace Apps.Mansa.Actions;
 [ActionList("Translation")]
 public class TranslationActions(InvocationContext invocationContext) : MansaInvocable(invocationContext)
 {
-    [Action("Translate text", Description = "Returns the translation of the provided text")]
-    public async Task<TranslationResponse> TranslateText([ActionParameter] TranslationRequest input)
+    [BlueprintActionDefinition(BlueprintAction.TranslateText)]
+    [Action("Translate text", Description = "Translate a single simple text string")]
+    public async Task<TranslationResponse> TranslateText([ActionParameter] TextTranslationRequest input)
     {
         var request = new RestRequest("translate", Method.Post);
 
@@ -20,7 +23,7 @@ public class TranslationActions(InvocationContext invocationContext) : MansaInvo
         var inputs = new Dictionary<string, object> 
         {
             {"text", input.Text },
-            { "to", input.To},
+            { "to", input.TargetLanguage},
             {"from" , input.From }
         };
 
@@ -51,4 +54,5 @@ public class TranslationActions(InvocationContext invocationContext) : MansaInvo
             Rate = response.Billing.Pricing.Rate
         };
     }
+
 }
