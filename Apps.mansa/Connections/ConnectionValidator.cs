@@ -14,7 +14,7 @@ public class ConnectionValidator: IConnectionValidator
         try
         {
             var client = new Client(authenticationCredentialsProviders);
-            var request = new RestRequest("translate", Method.Post);
+            var request = new RestRequest("https://all-lab-portal.com/api/translate", Method.Post);
 
             var jsonBody = new
             {
@@ -23,7 +23,8 @@ public class ConnectionValidator: IConnectionValidator
                 to = "Swahili",
                 from = "English"
             };
-            var response = await client.ExecuteWithErrorHandling(request);
+            request.AddJsonBody(jsonBody);
+            await client.ExecuteWithErrorHandling(request);
 
             return new()
             {
