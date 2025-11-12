@@ -1,8 +1,9 @@
 ﻿using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.SDK.Blueprints.Interfaces.Translate;
 
 namespace Apps.Mansa.Models;
 
-public class TranslationResponse
+public class TextResponse : ITranslateTextOutput
 {
     [Display("Translated text")]
     public string TranslatedText { get; set; }
