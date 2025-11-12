@@ -52,7 +52,7 @@ This key authenticates all requests to the Mansa API.
 
 ## Example
 
-![MansaConnection](image/README/BirdExample.png)
+![Mansa bird example](image/README/BirdExample.png)
 
 The example above shows a Bird that is triggered as soon as an entry is
 published in Contentful, said entry is then exported and
