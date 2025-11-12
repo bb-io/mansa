@@ -19,12 +19,12 @@ public class TextTranslationRequest : ITranslateTextInput
     [StaticDataSource(typeof(LanguageDataHandler))]
     public string TargetLanguage { get; set; }
 
-    [Display("Max tokens")]
+    [Display("Max tokens", Description = "Maximum response length (defaults to 512)")]
     public int? MaxTokens { get; set; }
 
-    [Display("Creativity")]
+    [Display("Creativity", Description = "Randomness level (0.1–1.0, defaults to 0.7)")]
     public double? Creativity { get; set; }
 
-    [Display("Context")]
+    [Display("Context", Description = "Optional contextual information to help clarify ambiguities and improve translation accuracy (e.g., \"This phrase is from a medical document\")")]
     public string? Context { get; set; }
 }
