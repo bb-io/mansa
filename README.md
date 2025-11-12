@@ -50,6 +50,14 @@ This key authenticates all requests to the Mansa API.
 - **Translate text** Translate a single text string. Useful when translating
   small messages. For larger content and files use _Translate_ instead.
 
+## Example
+
+![MansaConnection](image/README/BirdExample.png)
+
+The example above shows a Bird that is triggered as soon as an entry is
+published in Contentful, said entry is then exported and
+translated through Mansa before being imported back into Contentful.
+
 ## Feedback
 
 Do you want to use this app or do you have feedback on our implementation? Reach out to us using the [established channels](https://www.blackbird.io/) or create an issue.
