@@ -2,6 +2,7 @@ using Apps.Mansa.Models;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Newtonsoft.Json;
 using RestSharp;
 
 namespace Apps.Mansa.Actions;
@@ -38,11 +39,16 @@ public class TranslationActions(InvocationContext invocationContext) : MansaInvo
             inputs.Add("context", input.Context);
         }
         
-        var response = await Client.ExecuteWithTokenAsync(request, inputs);
+        var response = await Client.ExecuteWithTokenAsync<TranslateResponseDto>(request, inputs);
 
         return new TranslationResponse
         {
-            TranslatedText = response.Content
+            TranslatedText = response.Translation,
+            Characters = response.Billing.Characters,
+            Cost = response.Billing.Cost,
+            BalanceBefore = response.Billing.BalanceBefore,
+            BalanceAfter = response.Billing.BalanceAfter,
+            Rate = response.Billing.Pricing.Rate
         };
     }
 }

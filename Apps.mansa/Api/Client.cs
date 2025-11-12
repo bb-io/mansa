@@ -23,7 +23,7 @@ public class Client : BlackBirdRestClient
         this.AddDefaultHeader("Content-Type", "application/json");
     }
 
-    public async Task<RestResponse> ExecuteWithTokenAsync(RestRequest request, Dictionary<string, object> bodyParams)
+    public async Task<T> ExecuteWithTokenAsync<T>(RestRequest request, Dictionary<string, object> bodyParams)
     {
         if (bodyParams != null && bodyParams.Any())
         {
@@ -41,7 +41,7 @@ public class Client : BlackBirdRestClient
         {
             ConfigureErrorException(response);
         }
-        return response;
+        return JsonConvert.DeserializeObject<T>(response.Content);
     }
 
     protected override Exception ConfigureErrorException(RestResponse response)
