@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Product>Mansa</Product>
-        <Description>Description</Description>
+        <Description>Enterprise-grade translation services for African languages.</Description>
         <Version>1.0.1</Version>
         <AssemblyName>Apps.Mansa</AssemblyName>
     </PropertyGroup>
