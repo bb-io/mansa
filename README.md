@@ -36,7 +36,19 @@ This key authenticates all requests to the Mansa API.
 
 ### Translation
 
-- **Translate text** Translate a single text string. 
+- **Translate** Translate interopability compatible files in Blackbird
+  interoperability mode. If you're only translating text (strings) then use _Translate
+  text_ instead. Advanced settings:
+  - **Output file handling**: If using Blackbird's interoperability mode, this
+    determines the format of the output file. The default Blackbird behavior is
+    to convert to XLIFF for future steps. You can change it to output the
+    original file format (if you don't want to continue language operationts
+    after this step).
+  - **Context**: Add additional context to the translation, this can be anything
+    of relevance.
+  - **Creativity**: Randomness level (0.1–1.0, defaults to 0.7).   
+- **Translate text** Translate a single text string. Useful when translating
+  small messages. For larger content and files use _Translate_ instead.
 
 ## Feedback
 
