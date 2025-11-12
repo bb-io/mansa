@@ -6,7 +6,37 @@ Blackbird is the new automation backbone for the language technology industry. B
 
 <!-- begin docs -->
 
-Documentation coming soon.
+Mansa is an AI-powered translation platform specializing in African languages, offering high-quality, context-aware translations across more than 20 languages.
+
+## Before setting up
+
+Before you can connect you need to make sure that:
+
+- You have an API key for Mansa. If you don't: 
+
+
+1. Create an account in https://all-lab-portal.com/sign-in
+This gives you access to your workspace and API management tools.
+
+2. Generate an API Key
+From the user dashboard, create a new API key.
+This key authenticates all requests to the Mansa API.
+
+## Connecting
+
+1. Navigate to Apps, and identify the Mansa app. You can use search to find it.
+2. Click _Add Connection_.
+3. Name your connection for future reference e.g. 'My Mansa connection'.
+4. Fill in the API key to your Mansa account.
+5. Click _Connect_.
+
+![MansaConnection](image/README/MansaConnection.png)
+
+## Actions
+
+### Translation
+
+- **Translate text** Translate a single text string. 
 
 ## Feedback
 
