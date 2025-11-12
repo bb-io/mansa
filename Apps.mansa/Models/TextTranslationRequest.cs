@@ -1,13 +1,14 @@
-﻿using Blackbird.Applications.Sdk.Common;
+﻿using Apps.Mansa.Handlers.Static;
+using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Blackbird.Applications.Sdk.Common.Dynamic;
-using Apps.Mansa.Handlers.Static;
+using Blackbird.Applications.SDK.Blueprints.Interfaces.Translate;
 
 namespace Apps.Mansa.Models;
 
-public class TranslationRequest
+public class TextTranslationRequest : ITranslateTextInput
 {
-    [Display("Text")]
+    [Display("Text", Description = "Text to translate")]
     public string Text { get; set; }
 
     [Display("Source language")]
@@ -16,7 +17,7 @@ public class TranslationRequest
 
     [Display("Target language")]
     [StaticDataSource(typeof(LanguageDataHandler))]
-    public string To { get; set; }
+    public string TargetLanguage { get; set; }
 
     [Display("Max tokens")]
     public int? MaxTokens { get; set; }
