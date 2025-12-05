@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <Product>Mansa [Beta]</Product>
         <Description>Enterprise-grade translation services for African languages.</Description>
-        <Version>1.0.4</Version>
+        <Version>1.0.5</Version>
         <AssemblyName>Apps.Mansa</AssemblyName>
     </PropertyGroup>
 
