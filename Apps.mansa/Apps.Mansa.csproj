@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <Product>Mansa [Beta]</Product>
         <Description>Enterprise-grade translation services for African languages.</Description>
-        <Version>1.0.5</Version>
+        <Version>1.0.6</Version>
         <AssemblyName>Apps.Mansa</AssemblyName>
     </PropertyGroup>
 
@@ -24,4 +24,7 @@
       <Folder Include="image\" />
     </ItemGroup>
 
+    <ItemGroup>
+        <EmbeddedResource Include="..\README.md" Link="README.md" CopyToOutputDirectory="Always" />
+    </ItemGroup>
 </Project>
