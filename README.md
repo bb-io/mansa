@@ -15,7 +15,7 @@ Before you can connect you need to make sure that:
 - You have an API key for Mansa. If you don't: 
 
 
-1. Create an account in https://platform.mymansa.ai/sign-in
+1. Create an account in https://platform.mymansa.ai
 This gives you access to your workspace and API management tools.
 
 2. Generate an API Key
