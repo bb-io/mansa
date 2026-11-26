@@ -1,5 +1,4 @@
-using Apps.Mansa.Handlers;
-using Blackbird.Applications.Sdk.Common.Dynamic;
+using Apps.Mansa.Handlers.Static;
 using Tests.Mansa.Base;
 
 namespace Tests.Mansa;
@@ -8,18 +7,15 @@ namespace Tests.Mansa;
 public class HandlerTests : TestBase
 {
     [TestMethod]
-    public async Task Dynamic_handler_works()
+    public void Language_handler_returns_supported_languages()
     {
-        var handler = new DynamicHandler(InvocationContext);
+        var handler = new LanguageDataHandler();
 
-        var result = await handler.GetDataAsync(new DataSourceContext { }, CancellationToken.None);
+        var result = handler.GetData().ToList();
 
-        Console.WriteLine($"Total: {result.Count()}");
-        foreach (var item in result)
-        {
-            Console.WriteLine($"{item.Value}: {item.DisplayName}");
-        }
-
-        Assert.IsTrue(result.Count() > 0);
+        Assert.AreEqual(35, result.Count);
+        Assert.IsTrue(result.Any(x => x.Value == "English"));
+        Assert.IsTrue(result.Any(x => x.Value == "Swahili"));
+        Assert.IsTrue(result.Any(x => x.Value == "Twi"));
     }
 }
