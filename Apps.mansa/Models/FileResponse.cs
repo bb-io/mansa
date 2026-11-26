@@ -15,5 +15,11 @@ public class FileResponse : ITranslateFileOutput
     [Display("Output tokens")]
     public double OutputTokens { get; set; }
 
+    [Display("Invalid segments")]
+    public int InvalidSegments { get; set; }
+
+    [Display("Segments needing review")]
+    public int NeedsReviewSegments { get; set; }
+
     public double Cost { get; set; }
 }

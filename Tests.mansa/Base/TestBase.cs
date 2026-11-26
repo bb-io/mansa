@@ -61,13 +61,27 @@ public class TestBase
         var serverTask = Task.Run(async () =>
         {
             var ctx = await http.GetContextAsync();
-            await handler(ctx);
+            try
+            {
+                await handler(ctx);
+            }
+            catch
+            {
+                try { ctx.Response.Abort(); } catch { }
+                throw;
+            }
         });
 
         try
         {
-            await testAction(baseUrl);
-            await serverTask;
+            var clientTask = testAction(baseUrl);
+            var completed = await Task.WhenAny(clientTask, serverTask);
+            if (completed == serverTask && serverTask.IsFaulted)
+            {
+                await serverTask;
+            }
+
+            await Task.WhenAll(clientTask, serverTask);
         }
         finally
         {

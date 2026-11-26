@@ -172,6 +172,42 @@ public class ActionTests : TestBase
     }
 
     [TestMethod]
+    public async Task TranslateText_NullTranslation_ThrowsPluginApplicationException()
+    {
+        await RunWithMockServerAsync(async context =>
+        {
+            const string responseJson = """
+                {
+                  "context": "OK",
+                  "data": {
+                    "text": "Hello",
+                    "translation": null,
+                    "inputTokens": 1,
+                    "outputTokens": 0,
+                    "isValid": false,
+                    "needsReview": true
+                  },
+                  "meta": null
+                }
+                """;
+            await WriteJsonResponseAsync(context.Response, 200, responseJson);
+        }, async baseUrl =>
+        {
+            var actions = new TranslationActions(CreateInvocationContext("test-key"), FileManager, baseUrl);
+
+            var ex = await Assert.ThrowsExceptionAsync<PluginApplicationException>(async () =>
+                await actions.TranslateText(new TextTranslationRequest
+                {
+                    Text = "Hello",
+                    From = "English",
+                    TargetLanguage = "Swahili"
+                }));
+
+            StringAssert.Contains(ex.Message, "no translation");
+        });
+    }
+
+    [TestMethod]
     public async Task TranslateContent_SetsNewMansaToolReferenceInXliff()
     {
         var memoryFiles = new InMemoryFileManagementClient(
@@ -215,12 +251,78 @@ public class ActionTests : TestBase
             Assert.AreEqual(0.001, result.Cost);
             Assert.AreEqual(2, result.InputTokens);
             Assert.AreEqual(2, result.OutputTokens);
+            Assert.AreEqual(0, result.InvalidSegments);
+            Assert.AreEqual(0, result.NeedsReviewSegments);
 
             var xliffContent = memoryFiles.UploadedFiles[result.File.Name];
             StringAssert.Contains(xliffContent, "Habari dunia");
             StringAssert.Contains(xliffContent, "https://mymansa.ai");
             Assert.IsFalse(xliffContent.Contains("all-lab-portal.com", StringComparison.OrdinalIgnoreCase));
         });
+    }
+
+    [TestMethod]
+    public async Task TranslateContent_InvalidOrNullTranslation_LeavesSegmentUntranslated()
+    {
+        var memoryFiles = new InMemoryFileManagementClient(
+            "invalid.html",
+            "<html><body><p>Good phrase</p></body></html>");
+
+        await RunWithMockServerAsync(async context =>
+        {
+            const string responseJson = """
+                {
+                  "context": "OK",
+                  "data": {
+                    "text": "Good phrase",
+                    "translation": null,
+                    "inputTokens": 2,
+                    "outputTokens": 0,
+                    "isValid": false,
+                    "needsReview": true,
+                    "billing": {
+                      "cost": 0.0005,
+                      "balanceBefore": 5.0,
+                      "balanceAfter": 4.9995,
+                      "pricing": { "rate": "0.0001/char" }
+                    }
+                  },
+                  "meta": null
+                }
+                """;
+            await WriteJsonResponseAsync(context.Response, 200, responseJson);
+        }, async baseUrl =>
+        {
+            var actions = new TranslationActions(CreateInvocationContext("test-key"), memoryFiles, baseUrl);
+
+            var result = await actions.TranslateContent(new ContentTranslationRequest
+            {
+                File = new FileReference { Name = "invalid.html" },
+                SourceLanguage = "English",
+                TargetLanguage = "Swahili"
+            });
+
+            Assert.AreEqual(1, result.InvalidSegments);
+            Assert.AreEqual(1, result.NeedsReviewSegments);
+            Assert.AreEqual(2, result.InputTokens);
+
+            var xliffContent = memoryFiles.UploadedFiles[result.File.Name];
+            Assert.IsFalse(xliffContent.Contains("state=\"translated\"", StringComparison.OrdinalIgnoreCase));
+            Assert.IsFalse(xliffContent.Contains("https://mymansa.ai", StringComparison.OrdinalIgnoreCase));
+        });
+    }
+
+    [TestMethod]
+    public async Task RunWithMockServerAsync_HandlerFailure_PropagatesImmediately()
+    {
+        var ex = await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () =>
+            await RunWithMockServerAsync(_ => throw new InvalidOperationException("Simulated handler failure"), async baseUrl =>
+            {
+                using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+                await httpClient.GetAsync(baseUrl);
+            }));
+
+        Assert.AreEqual("Simulated handler failure", ex.Message);
     }
 
     private static InvocationContext CreateInvocationContext(string apiKey) => new()
