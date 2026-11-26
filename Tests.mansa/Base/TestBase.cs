@@ -58,9 +58,11 @@ public class TestBase
         http.Prefixes.Add(baseUrl);
         http.Start();
 
+        var handlerStarted = false;
         var serverTask = Task.Run(async () =>
         {
             var ctx = await http.GetContextAsync();
+            Volatile.Write(ref handlerStarted, true);
             try
             {
                 await handler(ctx);
@@ -76,9 +78,14 @@ public class TestBase
         {
             var clientTask = testAction(baseUrl);
             var completed = await Task.WhenAny(clientTask, serverTask);
-            if (completed == serverTask && serverTask.IsFaulted)
+            if (completed.IsFaulted || completed.IsCanceled)
             {
-                await serverTask;
+                await completed;
+            }
+
+            if (completed == clientTask && !Volatile.Read(ref handlerStarted))
+            {
+                return;
             }
 
             await Task.WhenAll(clientTask, serverTask);
@@ -86,6 +93,14 @@ public class TestBase
         finally
         {
             http.Stop();
+            try
+            {
+                await serverTask;
+            }
+            catch when (!Volatile.Read(ref handlerStarted))
+            {
+                // Listener was stopped because client exited or failed before sending a request.
+            }
         }
     }
 }
