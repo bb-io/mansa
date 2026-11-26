@@ -5,20 +5,28 @@ using RestSharp;
 
 namespace Apps.Mansa.Connections;
 
-public class ConnectionValidator: IConnectionValidator
+public class ConnectionValidator : IConnectionValidator
 {
+    private readonly string? _baseUrl;
+
+    public ConnectionValidator() { }
+
+    internal ConnectionValidator(string baseUrl)
+    {
+        _baseUrl = baseUrl;
+    }
+
     public async ValueTask<ConnectionValidationResponse> ValidateConnection(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
         CancellationToken cancellationToken)
     {
         try
         {
-            var client = new Client(authenticationCredentialsProviders);
-            var request = new RestRequest("https://all-lab-portal.com/api/translate", Method.Post);
+            var client = new Client(authenticationCredentialsProviders, _baseUrl);
+            var request = new RestRequest("v1/translate", Method.Post);
 
             var jsonBody = new
             {
-                token = authenticationCredentialsProviders.First(x => x.KeyName == "token").Value,
                 text = "Hello",
                 to = "Swahili",
                 from = "English"
@@ -30,8 +38,8 @@ public class ConnectionValidator: IConnectionValidator
             {
                 IsValid = true
             };
-
-        } catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             return new()
             {
@@ -39,6 +47,5 @@ public class ConnectionValidator: IConnectionValidator
                 Message = ex.Message
             };
         }
-
     }
 }

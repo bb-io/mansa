@@ -2,6 +2,7 @@ using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.Mansa.Handlers.Static;
+
 public class LanguageDataHandler : IStaticDataSourceItemHandler
 {
     public static Dictionary<string, string> Data => new()
@@ -26,7 +27,21 @@ public class LanguageDataHandler : IStaticDataSourceItemHandler
         { "Sesotho", "Sesotho (Lesotho)" },
         { "Sepedi", "Sepedi (South Africa)" },
         { "Tsonga", "Tsonga (South Africa)" },
-        { "English", "English"}
+        { "English", "English" },
+        { "French", "French" },
+        { "Spanish", "Spanish" },
+        { "Portuguese", "Portuguese" },
+        { "Kirundi", "Kirundi (Beta)" },
+        { "Ndebele (South)", "Ndebele (South) (Beta)" },
+        { "Swati", "Swati (Beta)" },
+        { "Tigrinya", "Tigrinya (Beta)" },
+        { "Twi", "Twi (Beta)" },
+        { "Ewe", "Ewe (Beta)" },
+        { "Lingala", "Lingala (Beta)" },
+        { "Kikongo", "Kikongo (Beta)" },
+        { "Bambara", "Bambara (Beta)" },
+        { "Bemba", "Bemba (Beta)" },
+        { "Dagbani", "Dagbani (Beta)" }
     };
 
     public IEnumerable<DataSourceItem> GetData()
