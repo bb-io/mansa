@@ -15,26 +15,41 @@ using RestSharp;
 namespace Apps.Mansa.Actions;
 
 [ActionList("Translation")]
-public class TranslationActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : MansaInvocable(invocationContext)
+public class TranslationActions : MansaInvocable
 {
+    private readonly IFileManagementClient _fileManagementClient;
+
+    public TranslationActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient)
+        : this(invocationContext, fileManagementClient, null)
+    {
+    }
+
+    internal TranslationActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient, string? baseUrl)
+        : base(invocationContext, baseUrl)
+    {
+        _fileManagementClient = fileManagementClient;
+    }
+
     [BlueprintActionDefinition(BlueprintAction.TranslateText)]
     [Action("Translate text", Description = "Translate a single simple text string")]
     public async Task<TextResponse> TranslateText([ActionParameter] TextTranslationRequest input)
     {
-        var request = new RestRequest("translate", Method.Post);
+        var request = new RestRequest("v1/translate", Method.Post);
 
-        request.AddHeader("Content-Type", "application/json");
-
-        var inputs = new Dictionary<string, object> 
+        var inputs = new Dictionary<string, object>
         {
-            {"text", input.Text },
-            { "to", input.TargetLanguage},
-            {"from" , input.From }
+            { "text", input.Text },
+            { "to", input.TargetLanguage }
         };
+
+        if (!string.IsNullOrWhiteSpace(input.From))
+        {
+            inputs.Add("from", input.From);
+        }
 
         if (input.MaxTokens != null)
         {
-            inputs.Add("max_tokens", input.MaxTokens);
+            inputs.Add("maxTokens", input.MaxTokens);
         }
 
         if (input.Creativity != null)
@@ -46,17 +61,25 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
         {
             inputs.Add("context", input.Context);
         }
-        
-        var response = await Client.ExecuteWithTokenAsync<TranslateResponseDto>(request, inputs);
+
+        var response = await Client.ExecuteJsonAsync<TranslateResponseDto>(request, inputs);
+        var data = response?.Data
+            ?? throw new PluginApplicationException("Mansa API response did not include a 'data' payload.");
 
         return new TextResponse
         {
-            TranslatedText = response.Translation,
-            Characters = response.Billing.Characters,
-            Cost = response.Billing.Cost,
-            BalanceBefore = response.Billing.BalanceBefore,
-            BalanceAfter = response.Billing.BalanceAfter,
-            Rate = response.Billing.Pricing.Rate
+            TranslatedText = data.Translation ?? data.Text,
+            Characters = input.Text?.Length ?? 0,
+            InputTokens = data.InputTokens,
+            OutputTokens = data.OutputTokens,
+            IsValid = data.IsValid,
+            NeedsReview = data.NeedsReview,
+            Cost = data.Billing?.Cost ?? 0,
+            CostUsd = data.Billing?.CostUsd,
+            CreditsCharged = data.Billing?.CreditsCharged,
+            BalanceBefore = data.Billing?.BalanceBefore ?? 0,
+            BalanceAfter = data.Billing?.BalanceAfter ?? 0,
+            Rate = data.Billing?.Pricing?.Rate
         };
     }
 
@@ -71,7 +94,7 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
 
         try
         {
-            var stream = await fileManagementClient.DownloadAsync(input.File);
+            var stream = await _fileManagementClient.DownloadAsync(input.File);
             var content = await Transformation.Parse(stream, input.File.Name);
 
             async Task<IEnumerable<TextResponse>> BatchTranslate(IEnumerable<(Unit Unit, Segment Segment)> batch)
@@ -92,20 +115,23 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
 
             var translations = await content.GetUnits().Batch(100, x => !x.IsIgnorbale && x.IsInitial).Process(BatchTranslate);
 
-            var sourceLanguages = new List<string>();
-            double Characters = 0;
-            double Cost = 0;
+            double characters = 0;
+            double inputTokens = 0;
+            double outputTokens = 0;
+            double cost = 0;
             foreach (var (unit, results) in translations)
             {
                 foreach (var (segment, result) in results)
                 {
                     segment.SetTarget(result.TranslatedText);
                     segment.State = SegmentState.Translated;
-                    Characters += result.Characters;
-                    Cost += result.Cost;
+                    characters += result.Characters;
+                    inputTokens += result.InputTokens;
+                    outputTokens += result.OutputTokens;
+                    cost += result.Cost;
                 }
                 unit.Provenance.Translation.Tool = "Mansa";
-                unit.Provenance.Translation.ToolReference = "https://all-lab-portal.com/";
+                unit.Provenance.Translation.ToolReference = "https://mymansa.ai";
             }
 
             if (input.OutputFileHandling == "original")
@@ -118,14 +144,16 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
                 }
                 catch (Exception e) when (e.Message.Contains("Cannot convert to content, no original data found"))
                 {
-                    throw new PluginMisconfigurationException("The original file content could not be retrieved because it's supported only for html files. Please change the 'Output file handling' field to 'Interoperable XLIFF (default)' or use DeepL native file translation strategy.");
+                    throw new PluginMisconfigurationException("The original file content could not be retrieved because it is not supported for this file format. Please change the 'Output file handling' field to 'Interoperable XLIFF (default)'.");
                 }
 
                 return new FileResponse
                 {
-                    File = await fileManagementClient.UploadAsync(originalStream, targetContent.OriginalMediaType, targetContent.OriginalName),
-                    Characters = Characters,
-                    Cost = Cost
+                    File = await _fileManagementClient.UploadAsync(originalStream, targetContent.OriginalMediaType, targetContent.OriginalName),
+                    Characters = characters,
+                    InputTokens = inputTokens,
+                    OutputTokens = outputTokens,
+                    Cost = cost
                 };
             }
             else if (input.OutputFileHandling == "xliff1")
@@ -133,28 +161,30 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
                 var xliff1String = Xliff1Serializer.Serialize(content);
                 return new FileResponse
                 {
-                    File = await fileManagementClient.UploadAsync(xliff1String.ToStream(), MediaTypes.Xliff, content.XliffFileName),
-                    Characters = Characters,
-                    Cost = Cost
+                    File = await _fileManagementClient.UploadAsync(xliff1String.ToStream(), MediaTypes.Xliff, content.XliffFileName),
+                    Characters = characters,
+                    InputTokens = inputTokens,
+                    OutputTokens = outputTokens,
+                    Cost = cost
                 };
-            }            
+            }
 
             return new FileResponse
             {
-                File = await fileManagementClient.UploadAsync(content.Serialize().ToStream(), MediaTypes.Xliff, content.XliffFileName),
-                Characters = Characters,
-                Cost = Cost
+                File = await _fileManagementClient.UploadAsync(content.Serialize().ToStream(), MediaTypes.Xliff, content.XliffFileName),
+                Characters = characters,
+                InputTokens = inputTokens,
+                OutputTokens = outputTokens,
+                Cost = cost
             };
-        
         }
         catch (Exception e)
         {
             if (e.Message.Contains("This file format is not supported"))
             {
-                throw new PluginMisconfigurationException("The file format is not supported by the Blackbird interoperable setting. Try setting the file translation strategy to DeepL native.");
+                throw new PluginMisconfigurationException("The file format is not supported by the Blackbird interoperable setting.");
             }
             throw;
         }
     }
-
 }

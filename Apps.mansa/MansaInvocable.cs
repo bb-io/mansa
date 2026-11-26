@@ -11,8 +11,13 @@ public class MansaInvocable : BaseInvocable
         InvocationContext.AuthenticationCredentialsProviders.ToArray();
 
     protected Client Client { get; }
-    public MansaInvocable(InvocationContext invocationContext) : base(invocationContext)
+
+    public MansaInvocable(InvocationContext invocationContext) : this(invocationContext, null)
     {
-        Client = new(Creds);
+    }
+
+    internal MansaInvocable(InvocationContext invocationContext, string? baseUrl) : base(invocationContext)
+    {
+        Client = new(Creds, baseUrl);
     }
 }
